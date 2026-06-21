@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>질문하기 — CPR 발표</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Pretendard","맑은 고딕",system-ui,sans-serif}
+body{background:#0a0a0f;color:#f4f1ef;min-height:100vh;padding:22px;display:flex;flex-direction:column;gap:14px}
+.h{font-size:24px;font-weight:900}.s{color:#a09cab;font-size:14px;line-height:1.5}
+.card{background:#15151e;border:1px solid #272730;border-radius:16px;padding:16px}
+label{font-size:13px;color:#a09cab;font-weight:700}
+input,textarea{width:100%;margin-top:6px;background:#0e0e15;border:1px solid #272730;border-radius:10px;color:#fff;padding:12px;font-size:16px;resize:none}
+button{width:100%;margin-top:12px;background:#ff4a2e;color:#fff;border:none;border-radius:999px;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
+#feed{display:flex;flex-direction:column;gap:10px}
+.item{background:#13131b;border:1px solid #272730;border-radius:12px;padding:12px}
+.q{font-weight:800}.q .nk{color:#ffd23f}.a{color:#27e0b0;margin-top:6px;line-height:1.5;white-space:pre-wrap}
+.note{color:#6f6b78;font-size:12px}
+</style></head><body>
+<div class="h">💬 발표자에게 질문하기</div>
+<div class="s">닉네임과 궁금한 점을 남겨 주세요. AI 발표자가 발표 화면에서 실시간으로 답해 드려요.</div>
+<div class="card">
+  <label>닉네임</label><input id="nick" maxlength="12" placeholder="예: 호기심많은학생">
+  <label style="display:block;margin-top:12px">질문</label><textarea id="q" rows="3" maxlength="200" placeholder="예: 발화 속도는 왜 효과가 없었나요?"></textarea>
+  <button id="send">질문 보내기</button>
+  <div id="status" class="note" style="margin-top:10px"></div>
+</div>
+<div class="s" style="margin-top:4px">받은 질문 & 답변</div>
+<div id="feed"></div>
+<script>
+var FB_CONFIG = {
+  apiKey:"AIzaSyBrhxzp0aPHK6nozgeoiGSVV2qQMzCDRZA",
+  authDomain:"branding-6fdfb.firebaseapp.com",
+  databaseURL:"https://branding-6fdfb-default-rtdb.firebaseio.com",
+  projectId:"branding-6fdfb",
+  storageBucket:"branding-6fdfb.firebasestorage.app",
+  messagingSenderId:"635730086026",
+  appId:"1:635730086026:web:f76b137afe59005f220573"
+};
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function makeBus(){
+ try{ if(FB_CONFIG&&FB_CONFIG.databaseURL&&typeof firebase!=='undefined'){ if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG); var db=firebase.database();
+   return {mode:'firebase',
+    post:function(q){return db.ref('questions').push(q);},
+    onItem:function(add,chg){db.ref('questions').limitToLast(60).on('child_added',function(s){add(s.key,s.val()||{});});db.ref('questions').on('child_changed',function(s){chg(s.key,s.val()||{});});}};
+ }}catch(e){}
+ var ch=null;try{ch=new BroadcastChannel('cprqa');}catch(e){}
+ return {mode:'local',
+  post:function(q){var k='k'+Date.now()+Math.random().toString(36).slice(2,6);if(ch)ch.postMessage({t:'q',q:Object.assign({key:k},q)});return {key:k};},
+  onItem:function(add,chg){if(ch)ch.addEventListener('message',function(e){var d=e.data;if(d&&d.t==='q')add(d.q.key,d.q);if(d&&d.t==='a')chg(d.key,{answer:d.answer});});}};
+}
+var BUS=makeBus();
+var items={};
+function render(){var f=document.getElementById('feed');var ks=Object.keys(items);f.innerHTML=ks.slice(-30).reverse().map(function(k){var it=items[k];return '<div class="item"><div class="q"><span class="nk">'+esc(it.nick||'익명')+'</span> '+esc(it.text||'')+'</div>'+(it.answer?'<div class="a">🤖 '+esc(it.answer)+'</div>':'<div class="note" style="margin-top:6px">답변 대기 중…</div>')+'</div>';}).join('');}
+BUS.onItem(function(k,v){items[k]=Object.assign(items[k]||{},v);render();},function(k,v){items[k]=Object.assign(items[k]||{},v);render();});
+document.getElementById('send').onclick=function(){var nick=(document.getElementById('nick').value||'').trim()||'익명';var q=(document.getElementById('q').value||'').trim();if(!q){document.getElementById('status').textContent='질문을 입력해 주세요.';return;}BUS.post({nick:nick,text:q,status:'pending',ts:Date.now()});document.getElementById('q').value='';document.getElementById('status').textContent='✅ 보냈어요! 발표 화면에서 답변을 확인하세요.';};
+</script></body></html>
