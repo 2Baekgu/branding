@@ -659,10 +659,10 @@ function askQA(){var ip=document.getElementById('qaInput');var q=(ip.value||'').
  var body={contents:[{parts:[{text:QCTX+"\n\n청중 질문: "+q+"\n\n위 연구 내용을 근거로, AI 발표 도우미로서 한국어로 세 문장에서 네 문장으로 친절하고 간결하게 답하세요. 모르면 솔직히 모른다고 답하세요."}]}]};
  fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+GEMINI_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(j){var t='';try{t=j.candidates[0].content.parts.map(function(p){return p.text||'';}).join('');}catch(e){t='';}item.a=t||'죄송해요, 답변을 가져오지 못했어요.';renderQA();speakAnswer(item.a);}).catch(function(){item.a='지금은 답변을 가져올 수 없어요. 잠시 후 다시 시도해 주세요.';renderQA();});
 }
-document.getElementById('qaBtn').onclick=openQA;
-document.getElementById('qaClose').onclick=closeQA;
-document.getElementById('qaSend').onclick=askQA;
-document.getElementById('qaInput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askQA();}});
+var _qb=document.getElementById('qaBtn');if(_qb)_qb.onclick=openQA;
+var _qc=document.getElementById('qaClose');if(_qc)_qc.onclick=closeQA;
+var _qs=document.getElementById('qaSend');if(_qs)_qs.onclick=askQA;
+var _qi=document.getElementById('qaInput');if(_qi)_qi.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askQA();}});
 
 
 /* ===== v11: live chat (read-only) + answer queue + prefetch ===== */
@@ -773,4 +773,4 @@ if(GEMINI_KEY){preload();}else{btn.disabled=true;setStat('① 키 붙여넣고 [
 
 slides[0].classList.add('active');dots[0].classList.add('on');document.getElementById('prog').style.width=(1/n*100)+'%';onEnter(slides[0]);
 </script>
-<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v21</div></body></html>
+<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v22</div></body></html>
