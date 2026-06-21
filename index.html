@@ -219,6 +219,10 @@ video{width:100%;border-radius:16px;border:1px solid var(--line);display:block;b
 .aq .arow{display:flex;gap:8px;margin-top:8px}
 .aq button{border:none;border-radius:8px;padding:8px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px}
 .aq .send{background:var(--red);color:#fff}.aq .regen{background:#23232f;color:#fff}.aq .del{background:transparent;color:var(--mut);border:1px solid var(--line)}
+
+#live{top:14px;right:14px;width:286px;max-height:42vh;overflow:hidden}
+#livefeed{max-height:34vh;overflow:hidden;-webkit-mask:linear-gradient(180deg,transparent 0,#000 16%);mask:linear-gradient(180deg,transparent 0,#000 16%)}
+#livefeed::-webkit-scrollbar{display:none}
 </style><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script></head>
 <body>
 <div id="prog"></div>
@@ -476,7 +480,7 @@ video{width:100%;border-radius:16px;border:1px solid var(--line);display:block;b
 </section>
 
 </div>
-<div id="avatar"><div class="cz"><svg viewBox="0 0 120 126" width="120" height="126"><defs><radialGradient id="gf" cx="42%" cy="30%" r="80%"><stop offset="0%" stop-color="#fff1de"/><stop offset="60%" stop-color="#ffb98f"/><stop offset="100%" stop-color="#ff8a5e"/></radialGradient></defs><line x1="60" y1="24" x2="60" y2="14" stroke="#ff8a5e" stroke-width="4" stroke-linecap="round"/><path class="tip2" d="M60 6 c3 -4 10 -1 10 4 c0 5 -7 8 -10 11 c-3 -3 -10 -6 -10 -11 c0 -5 7 -8 10 -4 z" fill="#ff5f8a"/><circle cx="60" cy="72" r="44" fill="url(#gf)"/><ellipse cx="44" cy="52" rx="13" ry="9" fill="#fff" opacity="0.26"/><ellipse cx="33" cy="82" rx="9" ry="5.5" fill="#ff6b6b" opacity="0.55"/><ellipse cx="87" cy="82" rx="9" ry="5.5" fill="#ff6b6b" opacity="0.55"/><g class="eyes"><circle cx="45" cy="68" r="10.5" fill="#3a241c"/><circle cx="49" cy="63.5" r="3.6" fill="#fff"/><circle cx="42" cy="71" r="1.7" fill="#fff" opacity="0.85"/><circle cx="75" cy="68" r="10.5" fill="#3a241c"/><circle cx="79" cy="63.5" r="3.6" fill="#fff"/><circle cx="72" cy="71" r="1.7" fill="#fff" opacity="0.85"/></g><path class="m-smile" d="M52 86 Q60 94 68 86" stroke="#7a3a26" stroke-width="3.6" fill="none" stroke-linecap="round"/><ellipse class="m-open" cx="60" cy="88" rx="6.5" ry="5.5" fill="#7a3a26"/></svg></div><div class="av-label">AI 발표 도우미</div></div><div id="startveil"><div class="kic">VOICE-GUIDED PRESENTATION</div><h3>안녕하세요,<br>저는 이 발표를 맡은 AI입니다.</h3><p>이수연 님을 대신해, 제가 이 연구를 음성으로 소개합니다. 발표 주제가 바로 ‘음성 안내’라서요. 마지막 결론은 이수연 님이 직접 전하고, 진행 중에는 언제든 질문하기 버튼으로 저에게 물어볼 수 있어요.</p><button id="startBtn">▶ 발표 시작</button><div id="genstat" style="margin-top:14px;color:var(--mut);font-size:13px;min-height:18px"></div><small>소리를 켜 주세요 🔊 · 키보드 ← → 로 직접 넘길 수도 있어요</small></div><canvas id="amb"></canvas><div id="flash"></div><canvas id="confetti"></canvas><button id="qaBtn">💬 질문하기</button><div id="qaPanel"><div class="qbox"><h4>💬 무엇이든 물어보세요</h4><div class="sub2">이 발표는 AI가 진행합니다. 연구에 대한 질문을 입력하면 실시간으로 답해 드려요.</div><div id="qaLog"></div><div class="qrow"><textarea id="qaInput" rows="2" placeholder="예: 왜 발화 속도는 효과가 없었나요?"></textarea><button id="qaSend">보내기</button></div><button id="qaClose">닫기</button></div></div><div id="live"><div class="lvhead"><span class="livebadge">● LIVE</span><span style="color:#cfcbd4;font-size:12px">실시간 질문</span></div><div id="livefeed"></div></div><div id="adminDot"></div><div id="admin"><div style="display:flex;justify-content:space-between;align-items:center"><h4>🎛 질문 관리 <span id="adminCount" style="color:var(--red)">0</span></h4><button id="adminClose" style="background:none;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit">닫기</button></div><div style="color:var(--mut);font-size:13px;margin-top:6px;line-height:1.5">질문이 오면 AI가 답안 초안을 만들어요. 확인·수정 후 ✅ 송출하면 화면에 답하고 음성으로 읽어 줍니다.</div><div id="adminList"></div></div><div class="counter"><span id="cur">1</span> / <span id="tot">16</span></div>
+<div id="avatar"><div class="cz"><svg viewBox="0 0 120 126" width="120" height="126"><defs><radialGradient id="gf" cx="42%" cy="30%" r="80%"><stop offset="0%" stop-color="#fff1de"/><stop offset="60%" stop-color="#ffb98f"/><stop offset="100%" stop-color="#ff8a5e"/></radialGradient></defs><line x1="60" y1="24" x2="60" y2="14" stroke="#ff8a5e" stroke-width="4" stroke-linecap="round"/><path class="tip2" d="M60 6 c3 -4 10 -1 10 4 c0 5 -7 8 -10 11 c-3 -3 -10 -6 -10 -11 c0 -5 7 -8 10 -4 z" fill="#ff5f8a"/><circle cx="60" cy="72" r="44" fill="url(#gf)"/><ellipse cx="44" cy="52" rx="13" ry="9" fill="#fff" opacity="0.26"/><ellipse cx="33" cy="82" rx="9" ry="5.5" fill="#ff6b6b" opacity="0.55"/><ellipse cx="87" cy="82" rx="9" ry="5.5" fill="#ff6b6b" opacity="0.55"/><g class="eyes"><circle cx="45" cy="68" r="10.5" fill="#3a241c"/><circle cx="49" cy="63.5" r="3.6" fill="#fff"/><circle cx="42" cy="71" r="1.7" fill="#fff" opacity="0.85"/><circle cx="75" cy="68" r="10.5" fill="#3a241c"/><circle cx="79" cy="63.5" r="3.6" fill="#fff"/><circle cx="72" cy="71" r="1.7" fill="#fff" opacity="0.85"/></g><path class="m-smile" d="M52 86 Q60 94 68 86" stroke="#7a3a26" stroke-width="3.6" fill="none" stroke-linecap="round"/><ellipse class="m-open" cx="60" cy="88" rx="6.5" ry="5.5" fill="#7a3a26"/></svg></div><div class="av-label">AI 발표 도우미</div></div><div id="startveil"><div class="kic">VOICE-GUIDED PRESENTATION</div><h3>안녕하세요,<br>저는 이 발표를 맡은 AI입니다.</h3><p>이수연 님을 대신해, 제가 이 연구를 음성으로 소개합니다. 발표 주제가 바로 ‘음성 안내’라서요. 마지막 결론은 이수연 님이 직접 전하고, 진행 중에는 언제든 질문하기 버튼으로 저에게 물어볼 수 있어요.</p><button id="startBtn">▶ 발표 시작</button><div id="genstat" style="margin-top:14px;color:var(--mut);font-size:13px;min-height:18px"></div><small>소리를 켜 주세요 🔊 · 키보드 ← → 로 직접 넘길 수도 있어요</small></div><canvas id="amb"></canvas><div id="flash"></div><canvas id="confetti"></canvas><div id="qaPanel"><div class="qbox"><h4>💬 무엇이든 물어보세요</h4><div class="sub2">이 발표는 AI가 진행합니다. 연구에 대한 질문을 입력하면 실시간으로 답해 드려요.</div><div id="qaLog"></div><div class="qrow"><textarea id="qaInput" rows="2" placeholder="예: 왜 발화 속도는 효과가 없었나요?"></textarea><button id="qaSend">보내기</button></div><button id="qaClose">닫기</button></div></div><div id="live"><div class="lvhead"><span class="livebadge">● LIVE</span><span style="color:#cfcbd4;font-size:12px">실시간 질문</span></div><div id="livefeed"></div></div><div class="counter"><span id="cur">1</span> / <span id="tot">16</span></div>
 <div class="dots" id="dots"></div>
 <div class="nav"><button id="pauseB" title="일시정지/재생">⏸</button><button id="prevB">‹</button><button id="nextB">›</button></div>
 
@@ -659,7 +663,7 @@ document.getElementById('qaSend').onclick=askQA;
 document.getElementById('qaInput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askQA();}});
 
 
-/* ===== v10: live chat + moderation + realtime bus ===== */
+/* ===== v11: live chat (read-only) + answer queue + prefetch ===== */
 var FB_CONFIG = {
   apiKey:"AIzaSyBrhxzp0aPHK6nozgeoiGSVV2qQMzCDRZA",
   authDomain:"branding-6fdfb.firebaseapp.com",
@@ -672,29 +676,37 @@ var FB_CONFIG = {
 function makeBus(){
  try{ if(FB_CONFIG&&FB_CONFIG.databaseURL&&typeof firebase!=='undefined'){ if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG); var db=firebase.database();
    return {mode:'firebase',
-    onQuestion:function(cb){db.ref('questions').limitToLast(60).on('child_added',function(s){var v=s.val()||{};cb({key:s.key,nick:v.nick,text:v.text});});},
-    answer:function(key,ans){db.ref('questions/'+key).update({answer:ans,status:'answered',ats:Date.now()});},
-    post:function(q){return db.ref('questions').push(q);},
-    onAnswer:function(cb){db.ref('questions').on('child_changed',function(s){var v=s.val()||{};if(v.status==='answered')cb({key:s.key,nick:v.nick,text:v.text,answer:v.answer});});}};
+    onQuestion:function(cb){db.ref('questions').limitToLast(40).on('child_added',function(s){var v=s.val()||{};cb({key:s.key,nick:v.nick,text:v.text});});},
+    onAnswer:function(cb){db.ref('questions').on('child_changed',function(s){var v=s.val()||{};if(v.status==='answered'&&v.answer)cb({key:s.key,nick:v.nick,answer:v.answer});});}};
  }}catch(e){console.warn('FB init fail',e);}
  var ch=null;try{ch=new BroadcastChannel('cprqa');}catch(e){}
  return {mode:'local',
   onQuestion:function(cb){if(ch)ch.addEventListener('message',function(e){var d=e.data;if(d&&d.t==='q')cb(d.q);});},
-  answer:function(key,ans){if(ch)ch.postMessage({t:'a',key:key,answer:ans});},
-  post:function(q){if(ch)ch.postMessage({t:'q',q:Object.assign({key:'k'+Date.now()+Math.random().toString(36).slice(2,6)},q)});},
-  onAnswer:function(cb){if(ch)ch.addEventListener('message',function(e){var d=e.data;if(d&&d.t==='a')cb({key:d.key,answer:d.answer});});}};
+  onAnswer:function(cb){if(ch)ch.addEventListener('message',function(e){var d=e.data;if(d&&d.t==='a')cb({key:d.key,nick:d.nick,answer:d.answer});});}};
 }
 var BUS=makeBus();
-(function(){try{var el=document.createElement('div');el.id='constat';el.style.cssText='position:fixed;left:24px;bottom:70px;z-index:63;font-size:11px;font-weight:700;color:#9d99a6';el.textContent=(BUS.mode==='firebase')?'● 연결 중…':'● 로컬 모드';document.body.appendChild(el);if(BUS.mode==='firebase'&&typeof firebase!=='undefined'){firebase.database().ref('.info/connected').on('value',function(s){el.textContent=s.val()?'● 실시간 연결됨':'● 연결 끊김';el.style.color=s.val()?'#27e0b0':'#ff5f5f';});}}catch(e){}})();
+(function(){try{var el=document.createElement('div');el.id='constat';el.style.cssText='position:fixed;left:24px;bottom:28px;z-index:63;font-size:11px;font-weight:700;color:#9d99a6';el.textContent=(BUS.mode==='firebase')?'● 연결 중…':'● 로컬 모드';document.body.appendChild(el);if(BUS.mode==='firebase'&&typeof firebase!=='undefined'){firebase.database().ref('.info/connected').on('value',function(s){el.textContent=s.val()?'● 실시간 연결됨':'● 연결 끊김';el.style.color=s.val()?'#27e0b0':'#ff5f5f';});}}catch(e){}})();
 var NC=['#ff8159','#ffd23f','#27e0b0','#9b5cff','#5ab0ff','#ff7ab0'];
-function nickColor(s){s=s||'';var hh=0;for(var i=0;i<s.length;i++)hh=(hh*31+s.charCodeAt(i))>>>0;return NC[hh%NC.length];}
-function addCmt(nick,text,host){var feed=document.getElementById('livefeed');if(!feed)return;var d=document.createElement('div');d.className='cmt'+(host?' host':'');d.innerHTML='<span class="nk" style="color:'+(host?'#fff':nickColor(nick))+'">'+esc(nick)+'</span>'+esc(text);feed.appendChild(d);while(feed.children.length>40)feed.removeChild(feed.firstChild);feed.scrollTop=feed.scrollHeight;}
-var pending={};
-function draftAnswer(q){var body={contents:[{parts:[{text:QCTX+"\n\n청중 질문: "+q+"\n\n위 연구 내용을 근거로, AI 발표 도우미로서 한국어로 두 문장에서 세 문장으로 친절하고 간결하게 답하세요. 모르면 솔직히 모른다고 답하세요."}]}]};return fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+GEMINI_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(j){try{return j.candidates[0].content.parts.map(function(p){return p.text||'';}).join('');}catch(e){return '';}});}
-function renderAdmin(){var box=document.getElementById('adminList');if(!box)return;var ks=Object.keys(pending);document.getElementById('adminCount').textContent=ks.length;box.innerHTML='';ks.forEach(function(key){var it=pending[key];var el=document.createElement('div');el.className='aq';el.innerHTML='<div class="qn" style="color:'+nickColor(it.nick)+'">'+esc(it.nick)+'</div><div class="qt">'+esc(it.text)+'</div><textarea id="ta_'+key+'"></textarea><div class="arow"><button class="send">✅ 송출</button><button class="regen">🔄 재생성</button><button class="del">🗑</button></div>';box.appendChild(el);var ta=el.querySelector('textarea');ta.value=it.draft||'초안 생성 중…';el.querySelector('.send').onclick=function(){var t=ta.value.trim();if(!t)return;sendAnswer(key,it.nick,t);};el.querySelector('.regen').onclick=function(){ta.value='초안 생성 중…';draftAnswer(it.text).then(function(d){it.draft=d;ta.value=d||'';});};el.querySelector('.del').onclick=function(){delete pending[key];renderAdmin();};});}
-function sendAnswer(key,nick,text){addCmt('AI 도우미','('+nick+'님께) '+text,true);speakAnswer(text);try{BUS.answer(key,text);}catch(e){}delete pending[key];renderAdmin();}
-BUS.onQuestion(function(q){if(!q||!q.text)return;addCmt(q.nick||'익명',q.text,false);pending[q.key]={nick:q.nick||'익명',text:q.text,draft:''};renderAdmin();var dot=document.getElementById('adminDot');if(dot)dot.style.display='block';if(GEMINI_KEY){draftAnswer(q.text).then(function(d){if(pending[q.key]){pending[q.key].draft=d;var ta=document.getElementById('ta_'+q.key);if(ta&&(ta.value===''||ta.value==='초안 생성 중…'))ta.value=d||'';}});}});
-(function(){var b=document.getElementById('qaBtn');if(b){b.textContent='🎛 질문 관리';b.onclick=function(){var a=document.getElementById('admin');a.classList.toggle('on');var dot=document.getElementById('adminDot');if(dot)dot.style.display='none';};}var cl=document.getElementById('adminClose');if(cl)cl.onclick=function(){document.getElementById('admin').classList.remove('on');};})();
+function nickColor(s){s=s||'';var hh=0;for(var i2=0;i2<s.length;i2++)hh=(hh*31+s.charCodeAt(i2))>>>0;return NC[hh%NC.length];}
+function addCmt(nick,text,host){var feed=document.getElementById('livefeed');if(!feed)return;var d=document.createElement('div');d.className='cmt'+(host?' host':'');d.innerHTML='<span class="nk" style="color:'+(host?'#fff':nickColor(nick))+'">'+esc(nick)+'</span>'+esc(text);feed.appendChild(d);while(feed.children.length>8)feed.removeChild(feed.firstChild);feed.scrollTop=feed.scrollHeight;}
+/* prefetch + advance guard */
+function prefetchNext(k){try{[k+1,k+2].forEach(function(j){if(j<NARR.length-1&&GEMINI_KEY&&ENGINE!=='browser'&&!ttsCache[j])fetchTTS(j).catch(function(){});});}catch(e){}}
+scheduleAdvance=function(k){if(playing&&!answering&&i===k&&k<NARR.length-1){advTimer=setTimeout(function(){go(k+1);},700+(EXTRA[k]||0));}};
+speakNarr=function(k){
+ if(!GEMINI_KEY||ENGINE==='browser'){speakTTS(NARR[k],k);prefetchNext(k);return;}
+ if(ttsCache[k]){playBlobObj(ttsCache[k],function(){scheduleAdvance(k);});prefetchNext(k);return;}
+ var tok=++speakToken;
+ fetchTTS(k).then(function(o){if(tok!==speakToken)return;if(o){playBlobObj(o,function(){scheduleAdvance(k);});prefetchNext(k);}else{ENGINE='browser';speakTTS(NARR[k],k);}}).catch(function(){ENGINE='browser';speakTTS(NARR[k],k);});
+};
+/* answer speak queue (no overlap, pauses auto-advance) */
+var answering=false, ansQ=[];
+function speakAns(text,onend){
+ function browser(){try{var u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';if(koVoice)u.voice=koVoice;u.onend=function(){if(onend)onend();};speechSynthesis.speak(u);}catch(e){if(onend)onend();}}
+ if(GEMINI_KEY&&ENGINE!=='browser'){fetchTTSText(text).then(function(o){playBlobObj(o,onend);}).catch(browser);}else{browser();}
+}
+function procAns(){if(answering||!ansQ.length)return;answering=true;playing=false;var pb=document.getElementById('pauseB');if(pb)pb.textContent='▶';stopSpeak();var it=ansQ.shift();addCmt('AI 도우미','('+(it.nick||'질문자')+'님께) '+it.text,true);speakAns(it.text,function(){answering=false;setTimeout(procAns,400);});}
+BUS.onQuestion(function(q){if(!q||!q.text)return;addCmt(q.nick||'익명',q.text,false);});
+BUS.onAnswer(function(a){if(!a||!a.answer)return;ansQ.push({nick:a.nick,text:a.answer});procAns();});
 
 slides[0].classList.add('active');dots[0].classList.add('on');document.getElementById('prog').style.width=(1/n*100)+'%';onEnter(slides[0]);
 </script>
