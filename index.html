@@ -223,6 +223,8 @@ video{width:100%;border-radius:16px;border:1px solid var(--line);display:block;b
 #live{top:14px;right:14px;width:286px;max-height:42vh;overflow:hidden}
 #livefeed{max-height:34vh;overflow:hidden;-webkit-mask:linear-gradient(180deg,transparent 0,#000 16%);mask:linear-gradient(180deg,transparent 0,#000 16%)}
 #livefeed::-webkit-scrollbar{display:none}
+.r{opacity:1 !important;transform:none !important;animation:none !important}
+#ttseng{position:fixed;left:24px;bottom:46px;z-index:63;font-size:11px;font-weight:700;color:#6f6b78}
 </style><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script></head>
 <body>
 <div id="prog"></div>
@@ -720,6 +722,24 @@ speakNarr=function(k){
  fetchTTS(k).then(function(o){if(tok!==speakToken)return;ttsFails=0;playBlobObj(o,function(){scheduleAdvance(k);});prefetchNext(k);}).catch(function(){ttsFails++;if(ttsFails>=2)ENGINE='browser';speakTTS(NARR[k],k);});
 };
 setInterval(function(){var a=document.querySelector('.slide.active');if(a){var es=a.querySelectorAll('.r');for(var z=0;z<es.length;z++){if(getComputedStyle(es[z]).opacity==='0')es[z].style.opacity='1';}}},1200);
+
+/* ===== v13: Cloud TTS (Neural2) primary, Gemini fallback, engine indicator ===== */
+(function(){try{var e=document.createElement('div');e.id='ttseng';e.textContent='음성: 준비';document.body.appendChild(e);}catch(_){}})();
+function setEng(t){var e=document.getElementById('ttseng');if(e)e.textContent='음성: '+t;}
+function cloudTTS(text){return fetch("https://texttospeech.googleapis.com/v1/text:synthesize?key="+GEMINI_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({input:{text:text},voice:{languageCode:"ko-KR",name:"ko-KR-Neural2-A"},audioConfig:{audioEncoding:"MP3",speakingRate:1.06}})}).then(function(r){return r.json();}).then(function(j){if(j.error||!j.audioContent)throw new Error((j.error&&j.error.message)||'cloud-tts');return 'data:audio/mp3;base64,'+j.audioContent;});}
+function geminiTTS(text){return new Promise(function(res,rej){(function tryi(mi){if(mi>=TTS_MODELS.length){rej(new Error('gemini-tts'));return;}fetch("https://generativelanguage.googleapis.com/v1beta/models/"+TTS_MODELS[mi]+":generateContent?key="+GEMINI_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:text}]}],generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:GEMINI_VOICE}}}}})}).then(function(r){return r.json();}).then(function(j){if(j.error)throw 0;var pt=j.candidates[0].content.parts[0].inlineData;var rate=24000,m=/rate=(\d+)/.exec(pt.mimeType||'');if(m)rate=parseInt(m[1]);res(URL.createObjectURL(pcmWav(b64b(pt.data),rate)));}).catch(function(){tryi(mi+1);});})(0);});}
+var _lasterr='';
+function fetchAudioURL(text){return geminiTTS(text).then(function(u){setEng('Gemini (자연음성)');return u;}).catch(function(e1){_lasterr=(e1&&e1.message)||'';return cloudTTS(text).then(function(u){setEng('Cloud TTS');return u;});});}
+function playURL(u,onend){var a=new Audio(u);curAudio=a;a.onplay=function(){avatarSpeak(true);};a.onended=function(){avatarSpeak(false);if(onend)onend();};a.onerror=function(){avatarSpeak(false);if(onend)onend();};var p=a.play();if(p&&p.catch)p.catch(function(){avatarSpeak(false);if(onend)onend();});}
+fetchTTS=function(k){return fetchAudioURL(NARR[k]).then(function(u){ttsCache[k]=u;return u;});};
+function prefetchNext(k){try{[k+1,k+2].forEach(function(j){if(j<NARR.length-1&&GEMINI_KEY&&!ttsCache[j])fetchTTS(j).catch(function(){});});}catch(e){}}
+speakNarr=function(k){
+ if(ttsCache[k]){playURL(ttsCache[k],function(){scheduleAdvance(k);});prefetchNext(k);return;}
+ if(!GEMINI_KEY){speakTTS(NARR[k],k);return;}
+ var tok=++speakToken;
+ fetchTTS(k).then(function(u){if(tok!==speakToken)return;playURL(u,function(){scheduleAdvance(k);});prefetchNext(k);}).catch(function(){if(tok!==speakToken)return;setEng('브라우저(기계음) — '+( _lasterr||'API 막힘'));speakTTS(NARR[k],k);});
+};
+speakAns=function(text,onend){fetchAudioURL(text).then(function(u){playURL(u,onend);}).catch(function(){try{var u2=new SpeechSynthesisUtterance(text);u2.lang='ko-KR';if(koVoice)u2.voice=koVoice;u2.onend=function(){if(onend)onend();};speechSynthesis.speak(u2);}catch(e){if(onend)onend();}});};
 
 slides[0].classList.add('active');dots[0].classList.add('on');document.getElementById('prog').style.width=(1/n*100)+'%';onEnter(slides[0]);
 </script>

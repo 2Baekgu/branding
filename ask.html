@@ -40,7 +40,7 @@ function makeBus(){
  try{ if(FB_CONFIG&&FB_CONFIG.databaseURL&&typeof firebase!=='undefined'){ if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG); var db=firebase.database();
    return {mode:'firebase',
     post:function(q){return db.ref('questions').push(q);},
-    onItem:function(add,chg){db.ref('questions').limitToLast(60).on('child_added',function(s){add(s.key,s.val()||{});});db.ref('questions').on('child_changed',function(s){chg(s.key,s.val()||{});});}};
+    onItem:function(add,chg){var st=Date.now();db.ref('questions').orderByChild('ts').startAt(st).on('child_added',function(s){add(s.key,s.val()||{});});db.ref('questions').on('child_changed',function(s){chg(s.key,s.val()||{});});}};
  }}catch(e){}
  var ch=null;try{ch=new BroadcastChannel('cprqa');}catch(e){}
  return {mode:'local',
