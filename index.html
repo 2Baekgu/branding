@@ -741,6 +741,12 @@ speakNarr=function(k){
 };
 speakAns=function(text,onend){fetchAudioURL(text).then(function(u){playURL(u,onend);}).catch(function(){try{var u2=new SpeechSynthesisUtterance(text);u2.lang='ko-KR';if(koVoice)u2.voice=koVoice;u2.onend=function(){if(onend)onend();};speechSynthesis.speak(u2);}catch(e){if(onend)onend();}});};
 
+/* ===== v14: auto-discover available model ===== */
+var _ALLM=null;
+function listModels(){if(_ALLM)return Promise.resolve(_ALLM);return fetch("https://generativelanguage.googleapis.com/v1beta/models?key="+GEMINI_KEY).then(function(r){return r.json();}).then(function(j){_ALLM=(j.models||[]);return _ALLM;});}
+function pickTTSModel(){return listModels().then(function(ms){var t=ms.filter(function(m){return /tts/i.test(m.name||'')&&(m.supportedGenerationMethods||[]).indexOf('generateContent')>=0;});return t[0]?(t[0].name||'').replace('models/',''):null;});}
+geminiTTS=function(text){return pickTTSModel().then(function(model){if(!model)throw new Error('no-tts-model');return fetch("https://generativelanguage.googleapis.com/v1beta/models/"+model+":generateContent?key="+GEMINI_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:text}]}],generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:GEMINI_VOICE}}}}})}).then(function(r){return r.json();}).then(function(j){if(j.error)throw new Error(j.error.message);var pt=j.candidates[0].content.parts[0].inlineData;var rate=24000,m=/rate=(\d+)/.exec(pt.mimeType||'');if(m)rate=parseInt(m[1]);return URL.createObjectURL(pcmWav(b64b(pt.data),rate));});});};
+
 slides[0].classList.add('active');dots[0].classList.add('on');document.getElementById('prog').style.width=(1/n*100)+'%';onEnter(slides[0]);
 </script>
-<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v10</div></body></html>
+<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v11</div></body></html>
