@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>질문 관리 (관리자) — CPR 발표</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Pretendard","맑은 고딕",system-ui,sans-serif}
+body{background:#0a0a0f;color:#f4f1ef;min-height:100vh;padding:20px;max-width:760px;margin:0 auto}
+.h{font-size:22px;font-weight:900}.s{color:#a09cab;font-size:13px;margin-top:4px}
+.stat{font-size:12px;font-weight:700;margin-top:8px}
+.aq{background:#15151e;border:1px solid #272730;border-radius:14px;padding:14px;margin-top:14px}
+.aq.done{opacity:.5}
+.qn{font-weight:800;font-size:14px}.qt{font-size:15px;margin-top:5px;color:#e7e3ea;line-height:1.45}
+textarea{width:100%;margin-top:10px;background:#0e0e15;border:1px solid #272730;border-radius:10px;color:#fff;padding:11px;font-size:14px;min-height:92px;resize:vertical;font-family:inherit}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+button{border:none;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px}
+.send{background:#ff4a2e;color:#fff}.regen{background:#23232f;color:#fff}.skip{background:transparent;color:#9d99a6;border:1px solid #272730}
+.badge{display:inline-block;background:#27e0b0;color:#08110d;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800;margin-left:6px}
+.empty{color:#6f6b78;margin-top:30px;text-align:center}
+</style></head><body>
+<div class="h">🎛 질문 관리 (관리자 전용)</div>
+<div class="s">관객 질문이 실시간으로 떠요. AI가 답안 초안을 만들면, 확인·수정 후 <b>송출</b>하면 발표 화면이 음성으로 답합니다.</div>
+<div class="stat" id="stat">● 연결 중…</div>
+<div id="list"></div>
+<div class="empty" id="empty">아직 들어온 질문이 없어요.</div>
+<script>
+var FB_CONFIG = {
+  apiKey:"AIzaSyBrhxzp0aPHK6nozgeoiGSVV2qQMzCDRZA",
+  authDomain:"branding-6fdfb.firebaseapp.com",
+  databaseURL:"https://branding-6fdfb-default-rtdb.firebaseio.com",
+  projectId:"branding-6fdfb",
+  storageBucket:"branding-6fdfb.firebasestorage.app",
+  messagingSenderId:"635730086026",
+  appId:"1:635730086026:web:f76b137afe59005f220573"
+};
+var GEMINI_KEY="AIzaSyDWAZpdDwGB1-NCGSmZKi7He8hyRXKGwPE";
+var QCTX="당신은 이수연 님의 창의성과 브랜딩 기말 발표를 진행하는 AI 발표 도우미입니다. 아래는 발표한 연구의 핵심입니다. 주제는 씨피알 긴급상황에서 행동을 지원하는 음성 안내의 설계 조건이며 정보밀도와 발화속도를 중심으로 합니다. 배경: 일반인 씨피알 시행률은 30퍼센트대이고, 장벽은 지식이 아니라 실수에 대한 두려움 같은 심리적 망설임입니다. 설문 이백한 명에서 중요성 인식은 4.68점, 수행 자신감은 3.01점, 망설임의 가장 큰 이유는 실수에 대한 두려움 43퍼센트였습니다. 실험은 발화속도 330과 400, 정보밀도 높음과 낮음을 교차한 2x2 설계로 조건당 8명 총 32명입니다. 마네킹에 옷을 입히고 뒤에 AI 스피커를 숨겨 대화하게 한 뒤 무작위 시점에 쓰러뜨려 긴박감을 재현했습니다. 결과: 음성 안내는 자신감을 3.47에서 6.03으로 높이고 행동 개시를 촉진했지만, 정보의 양이나 속도 조합으로는 우열이 갈리지 않았고 정확성에 대한 확신은 주지 못했습니다. 진짜 관건은 정보를 행동 단위로 나누고 행동할 시간을 주는 것이었습니다. 제안한 설계 원칙은 단호한 초기 지시, 행동 단위 분절, 지시와 행동의 리듬, 실시간 피드백, 단계별 멀티모달입니다. 창의성 수업과의 연결은 정답은 하나가 아니다, 기능적 고착 깨기와 브리콜라주, 예측을 깨는 놀라움, 디자인은 해체하고 다시 정의하는 일, 그리고 수치가 아니라 신뢰의 문제라는 점입니다.";
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+firebase.initializeApp(FB_CONFIG);var db=firebase.database();
+db.ref('.info/connected').on('value',function(s){var e=document.getElementById('stat');e.textContent=s.val()?'● 실시간 연결됨':'● 연결 끊김';e.style.color=s.val()?'#27e0b0':'#ff5f5f';});
+var items={};
+var MODELS=['gemini-2.5-flash','gemini-2.0-flash','gemini-flash-latest','gemini-1.5-flash'];
+function callModel(mi,q){return fetch("https://generativelanguage.googleapis.com/v1beta/models/"+MODELS[mi]+":generateContent?key="+GEMINI_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:QCTX+"\n\n청중 질문: "+q+"\n\n위 연구 내용을 근거로, AI 발표 도우미로서 한국어로 두세 문장으로 친절하고 간결하게 답하세요. 모르면 솔직히 모른다고 답하세요."}]}]})}).then(function(r){return r.json();}).then(function(j){if(j.error)throw new Error(j.error.message||'error');var t='';try{t=j.candidates[0].content.parts.map(function(p){return p.text||'';}).join('');}catch(e){t='';}if(!t)throw new Error('빈 응답');return t;});}
+function draft(q){return new Promise(function(res){(function tryi(mi){if(mi>=MODELS.length){res('[자동 생성 실패 — 직접 입력해 주세요]');return;}callModel(mi,q).then(res).catch(function(){tryi(mi+1);});})(0);});}
+function render(){var box=document.getElementById('list');var ks=Object.keys(items);document.getElementById('empty').style.display=ks.length?'none':'block';box.innerHTML='';ks.slice().reverse().forEach(function(key){var it=items[key];var el=document.createElement('div');el.className='aq'+(it.status==='answered'?' done':'');el.innerHTML='<div class="qn" style="color:#ffd23f">'+esc(it.nick||'익명')+(it.status==='answered'?'<span class="badge">송출됨</span>':'')+'</div><div class="qt">'+esc(it.text)+'</div>'+(it.status==='answered'?'<div class="qt" style="color:#27e0b0;margin-top:8px">🤖 '+esc(it.answer||'')+'</div>':'<textarea id="ta_'+key+'">'+esc(it.draft||'초안 생성 중…')+'</textarea><div class="row"><button class="send">✅ 송출</button><button class="regen">🔄 재생성</button></div>');box.appendChild(el);if(it.status!=='answered'){var ta=el.querySelector('textarea');el.querySelector('.send').onclick=function(){var t=ta.value.trim();if(!t)return;db.ref('questions/'+key).update({answer:t,status:'answered',ats:Date.now()});};el.querySelector('.regen').onclick=function(){ta.value='초안 생성 중…';draft(it.text).then(function(d){it.draft=d;ta.value=d;});};}});}
+db.ref('questions').limitToLast(50).on('child_added',function(s){var v=s.val()||{};var key=s.key;items[key]={nick:v.nick,text:v.text,status:v.status,answer:v.answer,draft:''};render();if(v.status!=='answered'){draft(v.text||'').then(function(d){if(items[key]){items[key].draft=d;var ta=document.getElementById('ta_'+key);if(ta&&(ta.value===''||ta.value==='초안 생성 중…'))ta.value=d;}});}});
+db.ref('questions').on('child_changed',function(s){var v=s.val()||{};if(items[s.key]){items[s.key]=Object.assign(items[s.key],v);render();}});
+</script></body></html>
