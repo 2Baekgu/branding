@@ -584,7 +584,7 @@ document.getElementById('pauseB').onclick=function(){if(playing){playing=false;s
 
 
 /* ===== Gemini TTS (브라우저에서 직접 호출) ===== */
-var GEMINI_KEY=(function(){try{var h=location.hash||'';var m=h.match(/[#&](?:k|key)=([^&]+)/);if(m){localStorage.setItem('gk',decodeURIComponent(m[1]));try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}}var k=localStorage.getItem('gk');if(!k){k=prompt('Gemini API 키를 입력하세요 (AIza... 로 시작). 한 번만 입력하면 이 기기에 저장됩니다.')||'';if(k)localStorage.setItem('gk',k);}return k||'';}catch(e){return '';}})(); /* ★ 본인 키로 교체하세요 (파일에 노출되므로 제한/재발급 권장). 비우면 브라우저 기본 음성으로 작동 */
+var GEMINI_KEY=(function(){try{var h=location.hash||'';var m=h.match(/[#&](?:k|key)=([^&]+)/);if(m){localStorage.setItem('gk',decodeURIComponent(m[1]));try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}}var k=localStorage.getItem('gk');if(!k){k=prompt('Gemini API 키를 입력하세요 (AI Studio에서 발급한 키, AQ. 또는 AIza 로 시작). 한 번만 입력하면 이 기기에 저장됩니다.')||'';if(k)localStorage.setItem('gk',k);}return k||'';}catch(e){return '';}})(); /* ★ 본인 키로 교체하세요 (파일에 노출되므로 제한/재발급 권장). 비우면 브라우저 기본 음성으로 작동 */
 var GEMINI_VOICE="Leda";
 var curAudio=null, ttsCache={};
 function scheduleAdvance(k){if(playing&&k<NARR.length-1){advTimer=setTimeout(function(){go(k+1)},700+(EXTRA[k]||0));}}
