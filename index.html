@@ -743,4 +743,4 @@ speakAns=function(text,onend){fetchAudioURL(text).then(function(u){playURL(u,one
 
 slides[0].classList.add('active');dots[0].classList.add('on');document.getElementById('prog').style.width=(1/n*100)+'%';onEnter(slides[0]);
 </script>
-</body></html>
+<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v9</div></body></html>
