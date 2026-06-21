@@ -676,7 +676,7 @@ var FB_CONFIG = {
 function makeBus(){
  try{ if(FB_CONFIG&&FB_CONFIG.databaseURL&&typeof firebase!=='undefined'){ if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG); var db=firebase.database();
    return {mode:'firebase',
-    onQuestion:function(cb){db.ref('questions').limitToLast(40).on('child_added',function(s){var v=s.val()||{};cb({key:s.key,nick:v.nick,text:v.text});});},
+    onQuestion:function(cb){var st=Date.now();db.ref('questions').orderByChild('ts').startAt(st).on('child_added',function(s){var v=s.val()||{};cb({key:s.key,nick:v.nick,text:v.text});});},
     onAnswer:function(cb){db.ref('questions').on('child_changed',function(s){var v=s.val()||{};if(v.status==='answered'&&v.answer)cb({key:s.key,nick:v.nick,answer:v.answer});});}};
  }}catch(e){console.warn('FB init fail',e);}
  var ch=null;try{ch=new BroadcastChannel('cprqa');}catch(e){}
@@ -707,6 +707,19 @@ function speakAns(text,onend){
 function procAns(){if(answering||!ansQ.length)return;answering=true;playing=false;var pb=document.getElementById('pauseB');if(pb)pb.textContent='▶';stopSpeak();var it=ansQ.shift();addCmt('AI 도우미','('+(it.nick||'질문자')+'님께) '+it.text,true);speakAns(it.text,function(){answering=false;setTimeout(procAns,400);});}
 BUS.onQuestion(function(q){if(!q||!q.text)return;addCmt(q.nick||'익명',q.text,false);});
 BUS.onAnswer(function(a){if(!a||!a.answer)return;ansQ.push({nick:a.nick,text:a.answer});procAns();});
+
+/* ===== v12: robust Gemini TTS + reveal safety ===== */
+var TTS_MODELS=['gemini-2.5-flash-preview-tts','gemini-2.5-pro-preview-tts'];
+fetchTTSText=function(text){return new Promise(function(res,rej){(function tryi(mi){if(mi>=TTS_MODELS.length){rej(new Error('tts'));return;}fetch("https://generativelanguage.googleapis.com/v1beta/models/"+TTS_MODELS[mi]+":generateContent?key="+GEMINI_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:text}]}],generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:GEMINI_VOICE}}}}})}).then(function(r){return r.json();}).then(function(j){if(j.error)throw 0;var pt=j.candidates[0].content.parts[0].inlineData;var rate=24000,m=/rate=(\d+)/.exec(pt.mimeType||'');if(m)rate=parseInt(m[1]);res({d:pt.data,r:rate});}).catch(function(){tryi(mi+1);});})(0);});};
+fetchTTS=function(k){return fetchTTSText(NARR[k]).then(function(o){ttsCache[k]=o;return o;});};
+var ttsFails=0;
+speakNarr=function(k){
+ if(ENGINE==='browser'||!GEMINI_KEY){speakTTS(NARR[k],k);prefetchNext(k);return;}
+ if(ttsCache[k]){playBlobObj(ttsCache[k],function(){scheduleAdvance(k);});prefetchNext(k);return;}
+ var tok=++speakToken;
+ fetchTTS(k).then(function(o){if(tok!==speakToken)return;ttsFails=0;playBlobObj(o,function(){scheduleAdvance(k);});prefetchNext(k);}).catch(function(){ttsFails++;if(ttsFails>=2)ENGINE='browser';speakTTS(NARR[k],k);});
+};
+setInterval(function(){var a=document.querySelector('.slide.active');if(a){var es=a.querySelectorAll('.r');for(var z=0;z<es.length;z++){if(getComputedStyle(es[z]).opacity==='0')es[z].style.opacity='1';}}},1200);
 
 slides[0].classList.add('active');dots[0].classList.add('on');document.getElementById('prog').style.width=(1/n*100)+'%';onEnter(slides[0]);
 </script>
