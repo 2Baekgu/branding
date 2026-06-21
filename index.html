@@ -678,7 +678,7 @@ var FB_CONFIG = {
 function makeBus(){
  try{ if(FB_CONFIG&&FB_CONFIG.databaseURL&&typeof firebase!=='undefined'){ if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG); var db=firebase.database();
    return {mode:'firebase',
-    onQuestion:function(cb){var st=Date.now();db.ref('questions').orderByChild('ts').startAt(st).on('child_added',function(s){var v=s.val()||{};cb({key:s.key,nick:v.nick,text:v.text});});},
+    onQuestion:function(cb){var lt=Date.now()-60000;db.ref('questions').limitToLast(40).on('child_added',function(s){var v=s.val()||{};if(!v.ts||v.ts<lt)return;cb({key:s.key,nick:v.nick,text:v.text});});},
     onAnswer:function(cb){db.ref('questions').on('child_changed',function(s){var v=s.val()||{};if(v.status==='answered'&&v.answer)cb({key:s.key,nick:v.nick,answer:v.answer});});}};
  }}catch(e){console.warn('FB init fail',e);}
  var ch=null;try{ch=new BroadcastChannel('cprqa');}catch(e){}
@@ -743,4 +743,4 @@ speakAns=function(text,onend){fetchAudioURL(text).then(function(u){playURL(u,one
 
 slides[0].classList.add('active');dots[0].classList.add('on');document.getElementById('prog').style.width=(1/n*100)+'%';onEnter(slides[0]);
 </script>
-<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v9</div></body></html>
+<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v10</div></body></html>
