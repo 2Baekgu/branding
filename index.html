@@ -679,7 +679,7 @@ function makeBus(){
  try{ if(FB_CONFIG&&FB_CONFIG.databaseURL&&typeof firebase!=='undefined'){ if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG); var db=firebase.database();
    return {mode:'firebase',
     onQuestion:function(cb){var lt=Date.now()-60000;db.ref('questions').limitToLast(40).on('child_added',function(s){var v=s.val()||{};if(!v.ts||v.ts<lt)return;cb({key:s.key,nick:v.nick,text:v.text});});},
-    onAnswer:function(cb){db.ref('questions').on('child_changed',function(s){var v=s.val()||{};if(v.status==='answered'&&v.answer)cb({key:s.key,nick:v.nick,answer:v.answer});});}};
+    onAnswer:function(cb){var lt=Date.now()-60000;db.ref('answers').limitToLast(30).on('child_added',function(s){var v=s.val()||{};if(v.ts&&v.ts<lt)return;cb({nick:v.nick,answer:v.answer});});}};
  }}catch(e){console.warn('FB init fail',e);}
  var ch=null;try{ch=new BroadcastChannel('cprqa');}catch(e){}
  return {mode:'local',
@@ -708,7 +708,7 @@ function speakAns(text,onend){
 }
 function procAns(){if(answering||!ansQ.length)return;answering=true;playing=false;var pb=document.getElementById('pauseB');if(pb)pb.textContent='▶';stopSpeak();var it=ansQ.shift();addCmt('AI 도우미','('+(it.nick||'질문자')+'님께) '+it.text,true);speakAns(it.text,function(){answering=false;setTimeout(procAns,400);});}
 BUS.onQuestion(function(q){if(!q||!q.text)return;addCmt(q.nick||'익명',q.text,false);});
-BUS.onAnswer(function(a){if(!a||!a.answer)return;ansQ.push({nick:a.nick,text:a.answer});procAns();});
+BUS.onAnswer(function(a){if(!a||!a.answer)return;addCmt('AI 도우미','('+(a.nick||'질문자')+'님께) '+a.answer,true);try{flashGo();}catch(e){}ansQ.push({text:a.answer});procAns();});
 
 /* ===== v12: robust Gemini TTS + reveal safety ===== */
 var TTS_MODELS=['gemini-2.5-flash-preview-tts','gemini-2.5-pro-preview-tts'];
@@ -753,6 +753,10 @@ startPres=function(){var v=document.getElementById('startveil');playing=true;if(
 var _sb=document.getElementById('startBtn');if(_sb)_sb.onclick=startPres;
 procAns=function(){if(answering||!ansQ.length)return;answering=true;playing=false;var pb=document.getElementById('pauseB');if(pb)pb.textContent='▶';stopSpeak();var it=ansQ.shift();addCmt('AI 도우미','('+(it.nick||'질문자')+'님께) '+it.text,true);try{flashGo();}catch(e){}speakAns(it.text,function(){answering=false;setTimeout(procAns,400);});};
 
+/* ===== v16: preload-all gate + audio-only procAns ===== */
+procAns=function(){if(answering||!ansQ.length)return;answering=true;playing=false;var pb=document.getElementById('pauseB');if(pb)pb.textContent='▶';stopSpeak();var it=ansQ.shift();speakAns(it.text,function(){answering=false;setTimeout(procAns,400);});};
+(function(){var btn=document.getElementById('startBtn');if(!btn)return;if(!GEMINI_KEY){return;}btn.disabled=true;var total=NARR.length,done=0;function upd(){btn.textContent='음성 준비 중… '+done+' / '+total;}upd();var idx=[];for(var k=0;k<total;k++)idx.push(k);var p=0,active=0;function fin(){done++;upd();if(done>=total){btn.disabled=false;btn.textContent='▶ 발표 시작';}}function nx(){while(active<3&&p<idx.length){(function(kk){active++;fetchTTS(kk).then(function(){active--;fin();nx();}).catch(function(){active--;fin();nx();});})(idx[p++]);}}nx();})();
+
 slides[0].classList.add('active');dots[0].classList.add('on');document.getElementById('prog').style.width=(1/n*100)+'%';onEnter(slides[0]);
 </script>
-<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v13</div></body></html>
+<script>(function(){function fix(){try{if(!document.querySelector(".slide.active")){var s=document.querySelectorAll(".slide");if(s&&s[0])s[0].classList.add("active");}}catch(e){}}fix();document.addEventListener("DOMContentLoaded",fix);window.addEventListener("load",fix);setTimeout(fix,300);setTimeout(fix,1200);})();</script><div id="verbadge" style="position:fixed;right:6px;bottom:4px;font-size:9px;color:#555;z-index:99;pointer-events:none">v14</div></body></html>

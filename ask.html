@@ -48,6 +48,7 @@ function makeBus(){
   onItem:function(add,chg){if(ch)ch.addEventListener('message',function(e){var d=e.data;if(d&&d.t==='q')add(d.q.key,d.q);if(d&&d.t==='a')chg(d.key,{answer:d.answer});});}};
 }
 var BUS=makeBus();
+try{if(typeof firebase!=='undefined'&&FB_CONFIG&&FB_CONFIG.databaseURL){var _adb=firebase.database();var _alt=Date.now()-60000;_adb.ref('answers').limitToLast(30).on('child_added',function(s){var v=s.val()||{};if(v.ts&&v.ts<_alt)return;var d=document.createElement('div');d.className='item';d.innerHTML='<div class="q"><span class="nk">🤖 AI</span> '+esc(v.nick||'')+'님께</div><div class="a">'+esc(v.answer||'')+'</div>';var fe=document.getElementById('feed');if(fe)fe.insertBefore(d,fe.firstChild);});}}catch(e){}
 var items={};
 function render(){var f=document.getElementById('feed');var ks=Object.keys(items);f.innerHTML=ks.slice(-30).reverse().map(function(k){var it=items[k];return '<div class="item"><div class="q"><span class="nk">'+esc(it.nick||'익명')+'</span> '+esc(it.text||'')+'</div>'+(it.answer?'<div class="a">🤖 '+esc(it.answer)+'</div>':'<div class="note" style="margin-top:6px">답변 대기 중…</div>')+'</div>';}).join('');}
 BUS.onItem(function(k,v){items[k]=Object.assign(items[k]||{},v);render();},function(k,v){items[k]=Object.assign(items[k]||{},v);render();});
